@@ -62,8 +62,8 @@ type QueryParams struct {
 }
 
 type Creds struct {
-	Email    string
-	Password string
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type Claims struct {

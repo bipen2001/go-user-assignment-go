@@ -1,6 +1,7 @@
 package userApi
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/bipen2001/go-user-assignment-go/internal/entity"
@@ -22,13 +23,12 @@ func RegisterHandlers(r *mux.Router, service model.Service) {
 
 	res := resource{service}
 
-	r.HandleFunc("/login", res.login).Methods("GET")
-	r.HandleFunc("/siginup", res.CreateUser).Methods("POST")
+	r.HandleFunc("/login", res.login).Methods("POST")
+	r.HandleFunc("/signup", res.CreateUser).Methods("POST")
 
-	r.HandleFunc("/user", res.GetUsers).Methods("GET")
-	r.HandleFunc("/user", res.CreateUser).Methods("POST")
-	r.HandleFunc("/user/{id}", res.GetUserById).Methods("GET")
-	r.HandleFunc("/user/{id}", res.UpdateUser).Methods("PATCH")
+	r.HandleFunc("/user", Authenticate(res.GetUsers)).Methods("GET")
+	r.HandleFunc("/user/{id}", Authenticate(res.GetUserById)).Methods("GET")
+	r.HandleFunc("/user/{id}", Authenticate(res.UpdateUser)).Methods("PATCH")
 
 	r.HandleFunc("/user/{id}", Authenticate(res.DeleteUser)).Methods("DELETE")
 
@@ -38,11 +38,11 @@ func (r *resource) login(w http.ResponseWriter, req *http.Request) {
 
 	var cred entity.Creds
 
-	err := utils.SanitizeRequest(req, cred)
+	err := utils.SanitizeRequest(req, &cred)
 
 	if err != nil {
 		utils.JsonResponse(w, http.StatusBadRequest, utils.ErrorResponse{Status: http.StatusBadRequest, ErrorMessage: "could not parse request body"})
-
+		return
 	}
 
 	user, err := r.userService.Get(req.Context(), entity.QueryParams{
@@ -50,12 +50,12 @@ func (r *resource) login(w http.ResponseWriter, req *http.Request) {
 	}, true)
 
 	if err != nil {
-
+		fmt.Println(err)
 		utils.JsonResponse(w, http.StatusBadRequest, utils.ErrorResponse{Status: http.StatusBadRequest, ErrorMessage: "User with that email do not exist"})
 		return
 	}
 
-	if len(user) > 0 {
+	if len(user) > 1 {
 		utils.JsonResponse(w, http.StatusBadRequest, utils.ErrorResponse{Status: http.StatusBadRequest, ErrorMessage: "Multiple User with this email exists"})
 		return
 	}
@@ -80,7 +80,7 @@ func (r *resource) login(w http.ResponseWriter, req *http.Request) {
 			Value:   token.Token,
 			Expires: token.Expires,
 		})
-
+	user[0].Password = ""
 	utils.JsonResponse(w, http.StatusOK, user)
 
 }
@@ -141,6 +141,7 @@ func (r *resource) CreateUser(w http.ResponseWriter, req *http.Request) {
 				ErrorMessage: "Cannot parse request body",
 			},
 		)
+		return
 
 	}
 

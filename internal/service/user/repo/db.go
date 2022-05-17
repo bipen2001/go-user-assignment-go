@@ -81,8 +81,13 @@ func (r *repository) Get(ctx context.Context, queryParams entity.QueryParams, pa
 	var users []entity.Response
 
 	for rows.Next() {
+		if pass {
 
-		err := rows.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.Dob)
+			err = rows.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.Dob, &user.Password)
+		} else {
+			err = rows.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.Dob)
+
+		}
 
 		if err != nil {
 
@@ -188,7 +193,7 @@ func Migrate(driverName, dataSource string) error {
 		firstName VARCHAR(30) NOT NULL,
 		lastName VARCHAR(30) NOT NULL,
 		email VARCHAR NOT NULL UNIQUE,
-		password VARCHAR(20) NOT NULL,
+		password VARCHAR NOT NULL,
 		dob timestamp NOT NULL,
 		created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   		updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -227,9 +232,6 @@ func createSearchQuery(
 	firstName string,
 	lastName string,
 	email string,
-	// created_at *time.Time,
-	// last_accessed_at *time.Time,
-	// updated_at *time.Time,
 	sort string,
 	order string,
 	pass bool,
@@ -274,6 +276,5 @@ func createSearchQuery(
 	}
 
 	query := `SELECT id,firstName,lastName,email,dob ` + password + ` FROM users` + where + " " + strings.Join(arr, " AND ") + " " + orderBy
-	fmt.Println(query)
 	return query
 }

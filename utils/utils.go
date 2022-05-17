@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -32,6 +33,7 @@ func SanitizeRequest(r *http.Request, req interface{}) error {
 	decoder := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 	if err := decoder.Decode(req); err != nil {
+		fmt.Println(err)
 		return err
 	}
 
@@ -52,8 +54,10 @@ func CreateJWT(user entity.Response) (*entity.JwtToken, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(os.Getenv("JWT_SECRET"))
+	fmt.Println(os.Getenv("JWT_SECRET"))
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 

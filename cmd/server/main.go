@@ -68,7 +68,7 @@ func main() {
 	log.Print("Listening on port", os.Getenv("SERVER_PORT"))
 
 	if err := srv.ListenAndServe(); err != nil {
-		log.Fatal("Failed to Listen on port", os.Getenv("SERVER_PORT"))
+		log.Fatal("Failed to Listen on port ", os.Getenv("SERVER_PORT"))
 	}
 
 }
