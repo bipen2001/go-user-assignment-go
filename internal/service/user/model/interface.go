@@ -16,8 +16,8 @@ type Service interface {
 
 type common interface {
 	GetById(context.Context, string) (*entity.User, error)
-	Get(context.Context) ([]entity.User, error)
-	Create(context.Context, entity.User) (*entity.User, error)
+	Get(context.Context, entity.QueryParams, bool) ([]entity.Response, error)
+	Create(context.Context, entity.User) (*entity.Response, error)
 	Delete(context.Context, string) error
-	Update(context.Context, entity.User) (*entity.User, error)
+	Update(context.Context, string, entity.UpdateUser) (*entity.User, error)
 }

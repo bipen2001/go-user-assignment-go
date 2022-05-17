@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/bipen2001/go-user-assignment-go/internal/entity"
 	"github.com/bipen2001/go-user-assignment-go/internal/service/user/model"
@@ -15,8 +16,8 @@ func NewService(repo model.Repository) model.Service {
 	return service{repo}
 }
 
-func (s service) Get(ctx context.Context) ([]entity.User, error) {
-	users, err := s.repo.Get(ctx)
+func (s service) Get(ctx context.Context, queryParams entity.QueryParams, pass bool) ([]entity.Response, error) {
+	users, err := s.repo.Get(ctx, queryParams, pass)
 	if err != nil {
 		return nil, err
 	}
@@ -25,6 +26,7 @@ func (s service) Get(ctx context.Context) ([]entity.User, error) {
 }
 
 func (s service) GetById(ctx context.Context, id string) (*entity.User, error) {
+
 	user, err := s.repo.GetById(ctx, id)
 	if err != nil {
 		return nil, err
@@ -33,18 +35,20 @@ func (s service) GetById(ctx context.Context, id string) (*entity.User, error) {
 	return user, nil
 }
 
-func (s service) Create(ctx context.Context, user entity.User) (*entity.User, error) {
+func (s service) Create(ctx context.Context, user entity.User) (*entity.Response, error) {
+
 	usr, err := s.repo.Create(ctx, user)
 
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 
 	return usr, nil
 }
 
-func (s service) Update(ctx context.Context, user entity.User) (*entity.User, error) {
-	usr, err := s.repo.Update(ctx, user)
+func (s service) Update(ctx context.Context, id string, user entity.UpdateUser) (*entity.User, error) {
+	usr, err := s.repo.Update(ctx, id, user)
 
 	if err != nil {
 		return nil, err

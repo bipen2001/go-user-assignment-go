@@ -1,7 +1,0 @@
-doubts = new
-- use of context
-- is it ryt to create database in sql func
-- is it good to expect the whole user obj each time from frontend
-
-
-// pooling of connection in sql func
