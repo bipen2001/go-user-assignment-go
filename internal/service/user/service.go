@@ -2,9 +2,9 @@ package user
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/bipen2001/go-user-assignment-go/internal/entity"
+	"github.com/bipen2001/go-user-assignment-go/internal/logger"
 	"github.com/bipen2001/go-user-assignment-go/internal/service/user/model"
 )
 
@@ -40,7 +40,7 @@ func (s service) Create(ctx context.Context, user entity.User) (*entity.Response
 	usr, err := s.repo.Create(ctx, user)
 
 	if err != nil {
-		fmt.Println(err)
+		logger.ErrorLog.Println(err)
 		return nil, err
 	}
 

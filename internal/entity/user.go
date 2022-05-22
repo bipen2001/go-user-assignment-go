@@ -8,12 +8,12 @@ import (
 )
 
 type User struct {
-	Id        string     `json:"id" validate:"omitempty,uuid"`
-	FirstName string     `json:"firstName" validate:"required" `
-	LastName  string     `json:"lastName" validate:"required"`
-	Email     *string    `json:"email" validate:"required,email"`
-	Dob       *time.Time `json:"dob" validate:"required"`
-	Password  string     `json:"password,omitempty" validate:"required"`
+	Id        string    `json:"id" validate:"omitempty,uuid"`
+	FirstName string    `json:"firstName" validate:"required,gte=2,lte=20" `
+	LastName  string    `json:"lastName" validate:"required,gte=0,lte=20"`
+	Email     string    `json:"email" validate:"required,email,gte=3,lte=20"`
+	Dob       time.Time `json:"dob" validate:"required"`
+	Password  string    `json:"password,omitempty" validate:"required,gte=8,lte=20"`
 }
 type UpdateUser struct {
 	FirstName string `json:"firstName"`

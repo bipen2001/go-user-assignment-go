@@ -1,12 +1,12 @@
 package userApi
 
 import (
-	"fmt"
 	"net/http"
 
 	"strconv"
 
 	"github.com/bipen2001/go-user-assignment-go/internal/entity"
+	"github.com/bipen2001/go-user-assignment-go/internal/logger"
 	"github.com/bipen2001/go-user-assignment-go/internal/service/user/model"
 	"github.com/bipen2001/go-user-assignment-go/utils"
 	"github.com/go-playground/validator"
@@ -51,7 +51,7 @@ func (r *resource) login(w http.ResponseWriter, req *http.Request) {
 	}, true)
 
 	if err != nil {
-		fmt.Println(err)
+		logger.ErrorLog.Println(err)
 		utils.JsonResponse(w, http.StatusBadRequest, utils.ErrorResponse{Status: http.StatusBadRequest, ErrorMessage: "User with that email do not exist"})
 		return
 	}

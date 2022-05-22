@@ -13,6 +13,8 @@ import (
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/rs/cors"
+
+	"github.com/bipen2001/go-user-assignment-go/internal/logger"
 )
 
 var (
@@ -35,13 +37,13 @@ func main() {
 		os.Getenv("DB_PASSWORD"),
 		os.Getenv("DB_NAME"),
 	)
-	fmt.Println(psqlInfo)
-	c := cors.New(cors.Options{
+
+	corsHandler := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5500"},
 		AllowedMethods:   []string{"GET", "POST", "DELETE", "PATCH"},
 		AllowCredentials: true,
 	})
-	r := mux.NewRouter()
+	router := mux.NewRouter()
 
 	// err := repo.DropDb("postgres", psqlInfo, dbName)
 
@@ -53,28 +55,28 @@ func main() {
 
 	if err != nil {
 
-		fmt.Println("Unable to migrate db", err)
+		logger.ErrorLog.Println("Unable to migrate db", err)
 	}
 
 	dbRepo, err := repo.NewRepository(db, psqlInfo)
 
 	if err != nil {
-		log.Fatal("Unable to connect to database ", err)
+		logger.ErrorLog.Fatal("Unable to connect to database ", err)
 	}
 
 	userService := user.NewService(dbRepo)
 
-	userApi.RegisterHandlers(r, userService)
+	userApi.RegisterHandlers(router, userService)
 
 	srv := &http.Server{
 		Addr:    ":" + os.Getenv("SERVER_PORT"),
-		Handler: c.Handler(r),
+		Handler: corsHandler.Handler(router),
 	}
 
-	log.Print("Listening on port", os.Getenv("SERVER_PORT"))
+	logger.CommonLog.Print("Listening on port ", os.Getenv("SERVER_PORT"))
 
 	if err := srv.ListenAndServe(); err != nil {
-		log.Fatal("Failed to Listen on port ", os.Getenv("SERVER_PORT"))
+		logger.ErrorLog.Fatal("Failed to Listen on port ", os.Getenv("SERVER_PORT"))
 	}
 
 }

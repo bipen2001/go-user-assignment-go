@@ -4,12 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/bipen2001/go-user-assignment-go/internal/entity"
+	"github.com/bipen2001/go-user-assignment-go/internal/logger"
 	"github.com/bipen2001/go-user-assignment-go/internal/service/user/model"
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -23,7 +23,7 @@ func NewRepository(dialect, dsn string) (model.Repository, error) {
 
 	db, err := sql.Open(dialect, dsn)
 	if err != nil {
-		fmt.Println(err)
+		logger.ErrorLog.Println(err)
 		return nil, err
 	}
 
@@ -186,7 +186,7 @@ func Migrate(driverName, dataSource string) error {
 	db, err := sql.Open(driverName, dataSource)
 
 	if err != nil {
-		fmt.Println(err)
+		logger.ErrorLog.Println(err)
 		return err
 	}
 

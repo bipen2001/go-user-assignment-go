@@ -2,12 +2,12 @@ package utils
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/bipen2001/go-user-assignment-go/internal/entity"
+	"github.com/bipen2001/go-user-assignment-go/internal/logger"
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -36,7 +36,7 @@ func SanitizeRequest(r *http.Request, req interface{}) error {
 	decoder := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 	if err := decoder.Decode(req); err != nil {
-		fmt.Println(err)
+		logger.ErrorLog.Println(err)
 		return err
 	}
 
@@ -57,10 +57,11 @@ func CreateJWT(user entity.Response) (*entity.JwtToken, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	fmt.Println(os.Getenv("JWT_SECRET"))
+	logger.CommonLog.Println(os.Getenv("JWT_SECRET"))
+
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
-		fmt.Println(err)
+		logger.ErrorLog.Println(err)
 		return nil, err
 	}
 
