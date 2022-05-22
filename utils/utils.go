@@ -25,6 +25,9 @@ func JsonResponse(w http.ResponseWriter, status int, resp interface{}) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
+	// w.Header().Set("Access-Control-Allow-Origin", "127.0.0.1:5500")
+	// w.Header().Set("Access-Control-Allow-Credentials","true")
+
 	w.WriteHeader(status)
 	w.Write(response)
 }

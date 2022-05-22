@@ -9,6 +9,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/joho/godotenv v1.4.0
 	github.com/lib/pq v1.10.5
+	github.com/rs/cors v1.8.2
 	github.com/satori/go.uuid v1.2.0
 	go.uber.org/zap v1.21.0
 	golang.org/x/crypto v0.0.0-20220516162934-403b01795ae8

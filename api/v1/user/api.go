@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"net/http"
 
+	"strconv"
+
 	"github.com/bipen2001/go-user-assignment-go/internal/entity"
 	"github.com/bipen2001/go-user-assignment-go/internal/service/user/model"
 	"github.com/bipen2001/go-user-assignment-go/utils"
 	"github.com/go-playground/validator"
-	"golang.org/x/crypto/bcrypt"
-
 	"github.com/gorilla/mux"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type resource struct {
@@ -113,6 +114,14 @@ func (r *resource) GetUsers(w http.ResponseWriter, req *http.Request) {
 	queryParams.Archived = req.URL.Query().Get("archived")
 	queryParams.Sort = req.URL.Query().Get("sort")
 	queryParams.Order = req.URL.Query().Get("order")
+	limit := 5
+	limit, _ = strconv.Atoi(req.URL.Query().Get("limit"))
+
+	queryParams.Limit = limit
+	page := 1
+	page, _ = strconv.Atoi(req.URL.Query().Get("page"))
+
+	queryParams.Page = page
 
 	user, err := r.userService.Get(req.Context(), queryParams, false)
 	if err != nil {
@@ -122,7 +131,11 @@ func (r *resource) GetUsers(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	utils.JsonResponse(w, http.StatusOK, user)
+	utils.JsonResponse(w, http.StatusOK, &entity.UserResponse{
+		Status: 200,
+		Data:   user,
+		Count:  len(user),
+	})
 }
 
 func (r *resource) CreateUser(w http.ResponseWriter, req *http.Request) {

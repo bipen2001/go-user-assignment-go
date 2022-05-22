@@ -28,6 +28,11 @@ type Response struct {
 	Age       int        `json:"age,omitempty"`
 	Password  string     `json:"password,omitempty"`
 }
+type UserResponse struct {
+	Status int        `json:"status"`
+	Data   []Response `json:"data"`
+	Count  int        `json:"count"`
+}
 
 func (user *UpdateUser) Update() string {
 
@@ -59,6 +64,8 @@ type QueryParams struct {
 	Archived  string
 	Sort      string
 	Order     string
+	Limit     int
+	Page      int
 }
 
 type Creds struct {

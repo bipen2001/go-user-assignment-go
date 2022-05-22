@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/rs/cors"
 )
 
 var (
@@ -35,6 +36,11 @@ func main() {
 		os.Getenv("DB_NAME"),
 	)
 	fmt.Println(psqlInfo)
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5500"},
+		AllowedMethods:   []string{"GET", "POST", "DELETE", "PATCH"},
+		AllowCredentials: true,
+	})
 	r := mux.NewRouter()
 
 	// err := repo.DropDb("postgres", psqlInfo, dbName)
@@ -62,7 +68,7 @@ func main() {
 
 	srv := &http.Server{
 		Addr:    ":" + os.Getenv("SERVER_PORT"),
-		Handler: r,
+		Handler: c.Handler(r),
 	}
 
 	log.Print("Listening on port", os.Getenv("SERVER_PORT"))

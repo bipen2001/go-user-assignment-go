@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -66,6 +67,8 @@ func (r *repository) Get(ctx context.Context, queryParams entity.QueryParams, pa
 		queryParams.Email,
 		queryParams.Sort,
 		queryParams.Order,
+		queryParams.Limit,
+		queryParams.Page,
 		pass,
 	)
 
@@ -234,6 +237,8 @@ func createSearchQuery(
 	email string,
 	sort string,
 	order string,
+	limit int,
+	page int,
 	pass bool,
 
 ) string {
@@ -274,7 +279,12 @@ func createSearchQuery(
 	if sort != "" {
 		orderBy = "ORDER BY " + sort + " " + strings.ToUpper(order)
 	}
-
-	query := `SELECT id,firstName,lastName,email,dob ` + password + ` FROM users` + where + " " + strings.Join(arr, " AND ") + " " + orderBy
+	if limit == 0 {
+		limit = 5
+	}
+	if page == 0 {
+		page = 1
+	}
+	query := `SELECT id,firstName,lastName,email,dob ` + password + ` FROM users` + where + " " + strings.Join(arr, " AND ") + " " + orderBy + " OFFSET " + strconv.Itoa((page-1)*limit) + " LIMIT " + strconv.Itoa(limit)
 	return query
 }
