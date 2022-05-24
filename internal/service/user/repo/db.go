@@ -193,8 +193,8 @@ func Migrate(driverName, dataSource string) error {
 	statement := `
 	CREATE TABLE IF NOT EXISTS users(
 		id UUID PRIMARY KEY ,
-		firstName VARCHAR(30) NOT NULL,
-		lastName VARCHAR(30) NOT NULL,
+		firstName VARCHAR NOT NULL,
+		lastName VARCHAR NOT NULL,
 		email VARCHAR NOT NULL UNIQUE,
 		password VARCHAR NOT NULL,
 		dob timestamp NOT NULL,
@@ -217,6 +217,7 @@ func DropDb(driverName, dataSource, dbname string) error {
 	if err != nil {
 		return err
 	}
+
 	_, err = db.Exec(`DROP DATABASE IF EXISTS ` + dbname)
 	if err != nil {
 		return err

@@ -25,7 +25,7 @@ type Response struct {
 	LastName  *string    `json:"lastName,omitempty"`
 	Email     string     `json:"email,omitempty"`
 	Dob       *time.Time `json:"dob,omitempty"`
-	Age       int        `json:"age,omitempty"`
+	Age       int        `json:"age"`
 	Password  string     `json:"password,omitempty"`
 }
 type UserResponse struct {
@@ -69,8 +69,8 @@ type QueryParams struct {
 }
 
 type Creds struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" validate:"required,email,gte=3,lte=20"`
+	Password string `json:"password" validate:"required,gte=8,lte=20"`
 }
 
 type Claims struct {

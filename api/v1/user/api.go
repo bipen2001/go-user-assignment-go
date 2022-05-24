@@ -1,10 +1,12 @@
 package userApi
 
 import (
+	"fmt"
 	"net/http"
 
 	"strconv"
 
+	"github.com/bipen2001/go-user-assignment-go/internal/config"
 	"github.com/bipen2001/go-user-assignment-go/internal/entity"
 	"github.com/bipen2001/go-user-assignment-go/internal/logger"
 	"github.com/bipen2001/go-user-assignment-go/internal/service/user/model"
@@ -16,22 +18,23 @@ import (
 
 type resource struct {
 	userService model.Service
+	config      *config.Config
 }
 
 var validate = validator.New()
 
-func RegisterHandlers(r *mux.Router, service model.Service) {
+func RegisterHandlers(r *mux.Router, service model.Service, config *config.Config) {
 
-	res := resource{service}
+	res := resource{service, config}
 
 	r.HandleFunc("/login", res.login).Methods("POST")
 	r.HandleFunc("/signup", res.CreateUser).Methods("POST")
 
-	r.HandleFunc("/user", Authenticate(res.GetUsers)).Methods("GET")
-	r.HandleFunc("/user/{id}", Authenticate(res.GetUserById)).Methods("GET")
-	r.HandleFunc("/user/{id}", Authenticate(res.UpdateUser)).Methods("PATCH")
+	r.HandleFunc("/user", Authenticate(res.GetUsers, config)).Methods("GET")
+	r.HandleFunc("/user/{id}", Authenticate(res.GetUserById, config)).Methods("GET")
+	r.HandleFunc("/user/{id}", Authenticate(res.UpdateUser, config)).Methods("PATCH")
 
-	r.HandleFunc("/user/{id}", Authenticate(res.DeleteUser)).Methods("DELETE")
+	r.HandleFunc("/user/{id}", Authenticate(res.DeleteUser, config)).Methods("DELETE")
 
 }
 
@@ -42,6 +45,7 @@ func (r *resource) login(w http.ResponseWriter, req *http.Request) {
 	err := utils.SanitizeRequest(req, &cred)
 
 	if err != nil {
+
 		utils.JsonResponse(w, http.StatusBadRequest, utils.ErrorResponse{Status: http.StatusBadRequest, ErrorMessage: "could not parse request body"})
 		return
 	}
@@ -51,6 +55,7 @@ func (r *resource) login(w http.ResponseWriter, req *http.Request) {
 	}, true)
 
 	if err != nil {
+
 		logger.ErrorLog.Println(err)
 		utils.JsonResponse(w, http.StatusBadRequest, utils.ErrorResponse{Status: http.StatusBadRequest, ErrorMessage: "User with that email do not exist"})
 		return
@@ -61,15 +66,16 @@ func (r *resource) login(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(user[0].Password), []byte(cred.Password))
-
 	if err != nil {
+
 		utils.JsonResponse(w, http.StatusUnauthorized, utils.ErrorResponse{Status: http.StatusUnauthorized, ErrorMessage: "Unauthorized!! Enter Correct Email or Password"})
 
 		return
 	}
 
-	token, err := utils.CreateJWT(user[0])
+	token, err := utils.CreateJWT(user[0], r.config.Auth.JwtKey)
 	if err != nil {
+
 		utils.JsonResponse(w, http.StatusInternalServerError, utils.ErrorResponse{Status: http.StatusInternalServerError, ErrorMessage: err.Error()})
 
 		return
@@ -114,13 +120,19 @@ func (r *resource) GetUsers(w http.ResponseWriter, req *http.Request) {
 	queryParams.Archived = req.URL.Query().Get("archived")
 	queryParams.Sort = req.URL.Query().Get("sort")
 	queryParams.Order = req.URL.Query().Get("order")
-	limit := 5
-	limit, _ = strconv.Atoi(req.URL.Query().Get("limit"))
 
+	limit, err := strconv.Atoi(req.URL.Query().Get("limit"))
+	if err != nil {
+		limit = r.config.Pagination.Limit
+
+	}
 	queryParams.Limit = limit
-	page := 1
-	page, _ = strconv.Atoi(req.URL.Query().Get("page"))
 
+	page, err := strconv.Atoi(req.URL.Query().Get("page"))
+	if err != nil {
+		page = r.config.Pagination.DefaultPage
+
+	}
 	queryParams.Page = page
 
 	user, err := r.userService.Get(req.Context(), queryParams, false)
@@ -132,7 +144,7 @@ func (r *resource) GetUsers(w http.ResponseWriter, req *http.Request) {
 	}
 
 	utils.JsonResponse(w, http.StatusOK, &entity.UserResponse{
-		Status: 200,
+		Status: http.StatusOK,
 		Data:   user,
 		Count:  len(user),
 	})
@@ -159,8 +171,9 @@ func (r *resource) CreateUser(w http.ResponseWriter, req *http.Request) {
 	}
 
 	err = validate.Struct(user)
-	if err != nil {
 
+	if err != nil {
+		fmt.Println(err)
 		utils.JsonResponse(w, http.StatusBadRequest, utils.ErrorResponse{Status: http.StatusBadRequest, ErrorMessage: err.Error()})
 
 		return
@@ -174,7 +187,7 @@ func (r *resource) CreateUser(w http.ResponseWriter, req *http.Request) {
 
 		return
 	}
-	token, err := utils.CreateJWT(*resUser)
+	token, err := utils.CreateJWT(*resUser, r.config.Auth.JwtKey)
 	if err != nil {
 		utils.JsonResponse(w, http.StatusInternalServerError, utils.ErrorResponse{Status: http.StatusInternalServerError, ErrorMessage: err.Error()})
 

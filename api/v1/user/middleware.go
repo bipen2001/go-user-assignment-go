@@ -2,17 +2,17 @@ package userApi
 
 import (
 	"net/http"
-	"os"
 
+	"github.com/bipen2001/go-user-assignment-go/internal/config"
 	"github.com/bipen2001/go-user-assignment-go/internal/entity"
 	"github.com/bipen2001/go-user-assignment-go/utils"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 )
 
-func Authenticate(f http.HandlerFunc) http.HandlerFunc {
+func Authenticate(f http.HandlerFunc, config *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		var jwt_sec = []byte(os.Getenv("JWT_SECRET"))
+		var jwt_sec = []byte(config.Auth.JwtKey)
 
 		token, err := req.Cookie("token")
 

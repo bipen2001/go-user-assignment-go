@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	userApi "github.com/bipen2001/go-user-assignment-go/api/v1/user"
+	"github.com/bipen2001/go-user-assignment-go/internal/config"
 	user "github.com/bipen2001/go-user-assignment-go/internal/service/user"
 	"github.com/bipen2001/go-user-assignment-go/internal/service/user/repo"
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/rs/cors"
 
@@ -22,7 +21,7 @@ var (
 )
 
 func main() {
-	err := godotenv.Load("../../internal/config/.env")
+	config, err := config.Load()
 
 	if err != nil {
 
@@ -31,21 +30,22 @@ func main() {
 
 	var psqlInfo = fmt.Sprintf(
 		"host = %s port = %v user = %s password = %s dbname= %s sslmode=disable",
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_USERNAME"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_NAME"),
+		config.Database.Host,
+		config.Database.Port,
+		config.Database.User,
+		config.Database.Password,
+		config.Database.Name,
 	)
 
 	corsHandler := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5500"},
+		AllowedOrigins:   []string{config.Server.CorsOrigin},
 		AllowedMethods:   []string{"GET", "POST", "DELETE", "PATCH"},
 		AllowCredentials: true,
 	})
+
 	router := mux.NewRouter()
 
-	// err := repo.DropDb("postgres", psqlInfo, dbName)
+	// err = repo.DropDb("postgres", psqlInfo, config.Database.Name)
 
 	// if err != nil {
 	// 	log.Fatal("Unable to reset db", err)
@@ -66,17 +66,17 @@ func main() {
 
 	userService := user.NewService(dbRepo)
 
-	userApi.RegisterHandlers(router, userService)
+	userApi.RegisterHandlers(router, userService, config)
 
 	srv := &http.Server{
-		Addr:    ":" + os.Getenv("SERVER_PORT"),
+		Addr:    ":" + fmt.Sprintf("%v", config.Server.Port),
 		Handler: corsHandler.Handler(router),
 	}
 
-	logger.CommonLog.Print("Listening on port ", os.Getenv("SERVER_PORT"))
+	logger.CommonLog.Print("Listening on port ", config.Server.Port)
 
 	if err := srv.ListenAndServe(); err != nil {
-		logger.ErrorLog.Fatal("Failed to Listen on port ", os.Getenv("SERVER_PORT"))
+		logger.ErrorLog.Fatal("Failed to Listen on port ", config.Server.Port)
 	}
 
 }

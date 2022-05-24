@@ -3,7 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"net/http"
-	"os"
+	"strconv"
 	"time"
 
 	"github.com/bipen2001/go-user-assignment-go/internal/entity"
@@ -25,8 +25,6 @@ func JsonResponse(w http.ResponseWriter, status int, resp interface{}) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	// w.Header().Set("Access-Control-Allow-Origin", "127.0.0.1:5500")
-	// w.Header().Set("Access-Control-Allow-Credentials","true")
 
 	w.WriteHeader(status)
 	w.Write(response)
@@ -43,7 +41,7 @@ func SanitizeRequest(r *http.Request, req interface{}) error {
 	return nil
 }
 
-func CreateJWT(user entity.Response) (*entity.JwtToken, error) {
+func CreateJWT(user entity.Response, secret string) (*entity.JwtToken, error) {
 
 	expirationTime := time.Now().Add(time.Minute * 5)
 
@@ -57,9 +55,8 @@ func CreateJWT(user entity.Response) (*entity.JwtToken, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	logger.CommonLog.Println(os.Getenv("JWT_SECRET"))
 
-	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	tokenString, err := token.SignedString([]byte(secret))
 	if err != nil {
 		logger.ErrorLog.Println(err)
 		return nil, err
@@ -69,5 +66,17 @@ func CreateJWT(user entity.Response) (*entity.JwtToken, error) {
 		Expires: expirationTime,
 		Token:   tokenString,
 	}, nil
+
+}
+
+func StringToInt(str string) (*int, error) {
+
+	integer, err := strconv.Atoi(str)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &integer, nil
 
 }
